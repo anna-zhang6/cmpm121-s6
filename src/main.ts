@@ -6,6 +6,9 @@ const app: HTMLElement = document.querySelector("#app")!;
 /** One unit of resource stored by the colony. */
 let spores = 0;
 
+/** Colony spread, in spores gained per elapsed second. */
+const spreadPerSecond = 0.5;
+
 function createHeading(): HTMLHeadingElement {
   const heading = document.createElement("h1");
   heading.textContent = "Mushroom Colony";
@@ -50,3 +53,21 @@ const button = createScatterButton(() => {
 const counter = createSporeCounter();
 
 app.append(heading, badge, button, counter.root);
+
+/**
+ * Colony growth runs on animation frames, but the rate depends on elapsed
+ * seconds, not frame count: frames deliver now-epochs, and the change per
+ * frame is spreadPerSecond scaled by the real elapsed time. Clicking keeps
+ * adding whole spores at the scatters themselves.
+ */
+let lastFrame: number = performance.now();
+
+function frame(now: number): void {
+  const elapsedSeconds = (now - lastFrame) / 1000;
+  lastFrame = now;
+  spores += spreadPerSecond * elapsedSeconds;
+  counter.update();
+  requestAnimationFrame(frame);
+}
+
+requestAnimationFrame(frame);
