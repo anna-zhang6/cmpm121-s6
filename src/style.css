@@ -1,0 +1,133 @@
+/* The colony's visual language: dark forest floor, warm spore cream,
+   and one hot cap color for the main action. */
+
+:root {
+  --bg: #0d1913;
+  --panel: #17301f;
+  --panel-edge: #2b4a35;
+  --card: #1d3a26;
+  --text: #efe6d0;
+  --muted: #a8bfa4;
+  --cap: #d95d39;
+  --cap-hover: #e5724e;
+  --stem: #f4ead2;
+  --growth: #3f8f5f;
+  --growth-hover: #4fa673;
+  --growth-off: #24382c;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    radial-gradient(1200px 500px at 50% -120px, #1d3a26, transparent),
+    var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, sans-serif;
+  line-height: 1.5;
+}
+
+#app {
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 28px 16px 48px;
+}
+
+h1 {
+  margin: 0 0 12px;
+  letter-spacing: 0.03em;
+  color: var(--stem);
+}
+
+#app > img {
+  margin: 0 0 12px;
+}
+
+button {
+  font: inherit;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+/* The main action reads hotter and heavier than everything else. */
+#scatter {
+  display: block;
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: var(--cap);
+  color: #2b1408;
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  box-shadow: 0 3px 0 #8f3517;
+  transition: background 120ms ease;
+}
+
+#scatter:hover:not(:disabled) {
+  background: var(--cap-hover);
+}
+
+#scatter:active:not(:disabled) {
+  transform: translateY(1px);
+  box-shadow: 0 2px 0 #8f3517;
+}
+
+#spore-count {
+  margin: 14px 0 20px;
+  font-size: 1.7rem;
+  font-weight: 700;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Each cultivation is a card with its own identity in the data. */
+#app > div:not(:last-of-type) {
+  background: var(--card);
+  border: 1px solid var(--panel-edge);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+}
+
+#app > div strong {
+  font-size: 1.05rem;
+  color: var(--stem);
+  letter-spacing: 0.02em;
+}
+
+#app > div span {
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+#app > div > button {
+  float: right;
+  padding: 8px 18px;
+  margin-top: -4px;
+  background: var(--growth);
+  color: #0d1913;
+  font-weight: 700;
+  transition: background 120ms ease;
+}
+
+#app > div > button:hover:not(:disabled) {
+  background: var(--growth-hover);
+}
+
+#app > div > button:disabled {
+  background: var(--growth-off);
+  color: #7d937f;
+  cursor: not-allowed;
+}
+
+/* Where the run reads back its overall shape. */
+#app > p:last-child {
+  clear: both;
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px dashed var(--panel-edge);
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}

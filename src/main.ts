@@ -1,5 +1,8 @@
 // @deno-types="./asset-url.d.ts"
 import mushroomUrl from "./assets/mushroom.svg?no-inline";
+// Vite pulls the stylesheet into the bundle and hashes it for Pages, same
+// as the SVG asset.
+import "./style.css";
 import {
   type Colony,
   copiesOf,
@@ -102,6 +105,7 @@ const heading = createHeading();
 const badge = createBadge();
 const button = createScatterButton(() => {
   scatter(colony, purchases);
+  counter.update();
   rateSummaryDirty = true;
 });
 const counter = createSporeCounter();
