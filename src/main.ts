@@ -6,8 +6,33 @@ const app: HTMLElement = document.querySelector("#app")!;
 /** One unit of resource stored by the colony. */
 let spores = 0;
 
-/** Colony spread, in spores gained per elapsed second. */
-const spreadPerSecond = 0.5;
+/** How many Spore Packets the colony has cultivated. */
+let packets = 0;
+
+/** Base package price, before escalation. */
+const packetBaseCost = 10;
+
+/** Each purchased packet makes the price 15 percent steeper. */
+const packetCostGrowth = 1.15;
+
+function packetCost(): number {
+  return Math.ceil(packetBaseCost * Math.pow(packetCostGrowth, packets));
+}
+
+function sporesPerScatter(): number {
+  return 1 + packets;
+}
+
+function spreadPerSecond(): number {
+  return 0.5;
+}
+
+function buyPacket(): void {
+  const cost = packetCost();
+  if (spores < cost) return;
+  spores -= cost;
+  packets += 1;
+}
 
 function createHeading(): HTMLHeadingElement {
   const heading = document.createElement("h1");
@@ -38,7 +63,7 @@ function createSporeCounter(): { root: HTMLElement; update: () => void } {
   const paragraph = document.createElement("p");
   paragraph.id = "spore-count";
   const update = () => {
-    paragraph.textContent = `Spores: ${spores.toLocaleString()}`;
+    paragraph.textContent = `Spores: ${Math.floor(spores).toLocaleString()}`;
   };
   update();
   return { root: paragraph, update };
@@ -47,12 +72,36 @@ function createSporeCounter(): { root: HTMLElement; update: () => void } {
 const heading = createHeading();
 const badge = createBadge();
 const button = createScatterButton(() => {
-  spores += 1;
-  counter.update();
+  spores += sporesPerScatter();
 });
 const counter = createSporeCounter();
+const rateSummary = document.createElement("p");
+const packetName = document.createElement("strong");
+packetName.textContent = "Spore Packet";
+const packetDetail = document.createElement("span");
+const packetCount = document.createElement("span");
+const packetButton = document.createElement("button");
+packetButton.textContent = "Cultivate";
+packetButton.addEventListener("click", buyPacket);
 
-app.append(heading, badge, button, counter.root);
+function updatePacketView(): void {
+  packetDetail.textContent =
+    `Escape the wind: grow ${sporesPerScatter()} spores per scatter. `;
+  packetCount.textContent = `Owned: ${packets}`;
+  packetButton.disabled = spores < packetCost();
+}
+updatePacketView();
+
+const packetRow = document.createElement("div");
+packetRow.append(
+  packetName,
+  document.createElement("br"),
+  packetDetail,
+  packetCount,
+  packetButton,
+);
+
+app.append(heading, badge, button, counter.root, packetRow, rateSummary);
 
 /**
  * Colony growth runs on animation frames, but the rate depends on elapsed
@@ -65,8 +114,12 @@ let lastFrame: number = performance.now();
 function frame(now: number): void {
   const elapsedSeconds = (now - lastFrame) / 1000;
   lastFrame = now;
-  spores += spreadPerSecond * elapsedSeconds;
+  spores += spreadPerSecond() * elapsedSeconds;
   counter.update();
+  rateSummary.textContent = `Spread rate: ${
+    spreadPerSecond().toFixed(1)
+  } spores/s`;
+  updatePacketView();
   requestAnimationFrame(frame);
 }
 
