@@ -3,35 +3,99 @@ import tileUrl from "./assets/tile.svg?no-inline";
 
 const app: HTMLElement = document.querySelector("#app")!;
 
+/** What one kind of cultivation does to the colony. */
+interface Purchase {
+  readonly id: string;
+  readonly name: string;
+  /** Flavor line tying the effect to the mushroom theme. */
+  readonly detail: string;
+  readonly baseCost: number;
+  /** Each owned copy multiplies this purchase's next price. */
+  readonly costGrowth: number;
+  /** Added spores per scatter, per owned copy. */
+  readonly clickBonus: number;
+  /** Added colony spread per second, per owned copy. */
+  readonly rateBonus: number;
+}
+
+/** The colony's offerings. Content lives here as data; shared code below
+ * interprets it, so adding an entry needs no new logic. */
+const purchases: readonly Purchase[] = [
+  {
+    id: "packet",
+    name: "Spore Packet",
+    detail: "Escape the wind: scatter denser clusters.",
+    baseCost: 10,
+    costGrowth: 1.15,
+    clickBonus: 1,
+    rateBonus: 0,
+  },
+  {
+    id: "mulch",
+    name: "Mulch Bed",
+    detail: "Fallen nutrients feed the mycelium.",
+    baseCost: 25,
+    costGrowth: 1.2,
+    clickBonus: 0,
+    rateBonus: 0.5,
+  },
+  {
+    id: "fan",
+    name: "Breeze Fan",
+    detail: "Slow drafts carry spores far and wide.",
+    baseCost: 60,
+    costGrowth: 1.25,
+    clickBonus: 3,
+    rateBonus: 0,
+  },
+  {
+    id: "dome",
+    name: "Humidity Dome",
+    detail: "Steady moisture keeps the hyphae reaching.",
+    baseCost: 120,
+    costGrowth: 1.3,
+    clickBonus: 0,
+    rateBonus: 2,
+  },
+];
+
 /** One unit of resource stored by the colony. */
 let spores = 0;
 
-/** How many Spore Packets the colony has cultivated. */
-let packets = 0;
+/** Copies owned of each purchase, keyed by purchase id. */
+const owned: Record<string, number> = {};
 
-/** Base package price, before escalation. */
-const packetBaseCost = 10;
+function copiesOf(purchase: Purchase): number {
+  return owned[purchase.id] ?? 0;
+}
 
-/** Each purchased packet makes the price 15 percent steeper. */
-const packetCostGrowth = 1.15;
-
-function packetCost(): number {
-  return Math.ceil(packetBaseCost * Math.pow(packetCostGrowth, packets));
+/** Price of the next copy, escalating with how many are already grown. */
+function costOf(purchase: Purchase): number {
+  return Math.ceil(
+    purchase.baseCost * Math.pow(purchase.costGrowth, copiesOf(purchase)),
+  );
 }
 
 function sporesPerScatter(): number {
-  return 1 + packets;
+  return 1 + purchases.reduce(
+    (total, purchase) => total + purchase.clickBonus * copiesOf(purchase),
+    0,
+  );
 }
 
 function spreadPerSecond(): number {
-  return 0.5;
+  return 0.5 + purchases.reduce(
+    (total, purchase) => total + purchase.rateBonus * copiesOf(purchase),
+    0,
+  );
 }
 
-function buyPacket(): void {
-  const cost = packetCost();
+/** Spends the stored spores; blocked while unaffordable. */
+function buy(purchase: Purchase): void {
+  const cost = costOf(purchase);
   if (spores < cost) return;
   spores -= cost;
-  packets += 1;
+  owned[purchase.id] = copiesOf(purchase) + 1;
 }
 
 function createHeading(): HTMLHeadingElement {
@@ -69,6 +133,46 @@ function createSporeCounter(): { root: HTMLElement; update: () => void } {
   return { root: paragraph, update };
 }
 
+interface PurchaseRow {
+  readonly root: HTMLElement;
+  /** Refresh price, owned count, and affordability from state. */
+  update(): void;
+}
+
+/** One offering's view: same shape for every kind of purchase. */
+function createPurchaseRow(purchase: Purchase): PurchaseRow {
+  const name = document.createElement("strong");
+  name.textContent = purchase.name;
+
+  const detail = document.createElement("span");
+  detail.textContent = purchase.detail;
+
+  const stats = document.createElement("span");
+
+  const cultivate = document.createElement("button");
+  cultivate.textContent = "Cultivate";
+  cultivate.addEventListener("click", () => buy(purchase));
+
+  const root = document.createElement("div");
+  root.append(
+    name,
+    document.createElement("br"),
+    detail,
+    document.createElement("br"),
+    stats,
+    cultivate,
+  );
+
+  const update = () => {
+    stats.textContent = `Owned: ${copiesOf(purchase)} · Price: ${
+      costOf(purchase).toLocaleString()
+    } spores`;
+    cultivate.disabled = spores < costOf(purchase);
+  };
+  update();
+  return { root, update };
+}
+
 const heading = createHeading();
 const badge = createBadge();
 const button = createScatterButton(() => {
@@ -76,32 +180,24 @@ const button = createScatterButton(() => {
 });
 const counter = createSporeCounter();
 const rateSummary = document.createElement("p");
-const packetName = document.createElement("strong");
-packetName.textContent = "Spore Packet";
-const packetDetail = document.createElement("span");
-const packetCount = document.createElement("span");
-const packetButton = document.createElement("button");
-packetButton.textContent = "Cultivate";
-packetButton.addEventListener("click", buyPacket);
+const purchaseRows: PurchaseRow[] = purchases.map(createPurchaseRow);
 
-function updatePacketView(): void {
-  packetDetail.textContent =
-    `Escape the wind: grow ${sporesPerScatter()} spores per scatter. `;
-  packetCount.textContent = `Owned: ${packets}`;
-  packetButton.disabled = spores < packetCost();
+function updateRateSummary(): void {
+  rateSummary.textContent =
+    `Per scatter: ${sporesPerScatter()} spores · Spread: ${
+      spreadPerSecond().toFixed(1)
+    } spores/s`;
 }
-updatePacketView();
+updateRateSummary();
 
-const packetRow = document.createElement("div");
-packetRow.append(
-  packetName,
-  document.createElement("br"),
-  packetDetail,
-  packetCount,
-  packetButton,
+app.append(
+  heading,
+  badge,
+  button,
+  counter.root,
+  ...purchaseRows.map((row) => row.root),
+  rateSummary,
 );
-
-app.append(heading, badge, button, counter.root, packetRow, rateSummary);
 
 /**
  * Colony growth runs on animation frames, but the rate depends on elapsed
@@ -116,10 +212,8 @@ function frame(now: number): void {
   lastFrame = now;
   spores += spreadPerSecond() * elapsedSeconds;
   counter.update();
-  rateSummary.textContent = `Spread rate: ${
-    spreadPerSecond().toFixed(1)
-  } spores/s`;
-  updatePacketView();
+  updateRateSummary();
+  for (const row of purchaseRows) row.update();
   requestAnimationFrame(frame);
 }
 
