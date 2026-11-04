@@ -71,9 +71,11 @@ function createPurchaseRow(purchase: Purchase): PurchaseRow {
   name.textContent = purchase.name;
 
   const detail = document.createElement("span");
+  detail.className = "flavor";
   detail.textContent = purchase.detail;
 
   const stats = document.createElement("span");
+  stats.className = "stats";
 
   const cultivate = document.createElement("button");
   cultivate.textContent = "Cultivate";
@@ -81,15 +83,12 @@ function createPurchaseRow(purchase: Purchase): PurchaseRow {
     if (tryBuy(colony, purchase)) rateSummaryDirty = true;
   });
 
+  const info = document.createElement("div");
+  info.append(name, detail, stats);
+
   const root = document.createElement("div");
-  root.append(
-    name,
-    document.createElement("br"),
-    detail,
-    document.createElement("br"),
-    stats,
-    cultivate,
-  );
+  root.className = "purchase";
+  root.append(info, cultivate);
 
   const update = () => {
     stats.textContent = `Owned: ${copiesOf(colony, purchase)} · Price: ${

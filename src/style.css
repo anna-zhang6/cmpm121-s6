@@ -82,8 +82,12 @@ button {
   font-variant-numeric: tabular-nums;
 }
 
-/* Each cultivation is a card with its own identity in the data. */
-#app > div:not(:last-of-type) {
+/* Each cultivation is a card: text on the left, cultivation on the right. */
+.purchase {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   background: var(--card);
   border: 1px solid var(--panel-edge);
   border-radius: 12px;
@@ -91,32 +95,44 @@ button {
   margin-bottom: 10px;
 }
 
-#app > div strong {
+.purchase > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.purchase strong {
   font-size: 1.05rem;
   color: var(--stem);
   letter-spacing: 0.02em;
 }
 
-#app > div span {
+.purchase .flavor {
   color: var(--muted);
   font-size: 0.92rem;
 }
 
-#app > div > button {
-  float: right;
-  padding: 8px 18px;
-  margin-top: -4px;
+.purchase .stats {
+  color: var(--muted);
+  font-size: 0.92rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.purchase > button {
+  flex: none;
+  padding: 9px 18px;
   background: var(--growth);
   color: #0d1913;
   font-weight: 700;
   transition: background 120ms ease;
 }
 
-#app > div > button:hover:not(:disabled) {
+.purchase > button:hover:not(:disabled) {
   background: var(--growth-hover);
 }
 
-#app > div > button:disabled {
+.purchase > button:disabled {
   background: var(--growth-off);
   color: #7d937f;
   cursor: not-allowed;
