@@ -1,5 +1,5 @@
 // @deno-types="./asset-url.d.ts"
-import tileUrl from "./assets/tile.svg?no-inline";
+import mushroomUrl from "./assets/mushroom.svg?no-inline";
 import {
   type Colony,
   copiesOf,
@@ -27,8 +27,8 @@ function createHeading(): HTMLHeadingElement {
 
 function createBadge(): HTMLImageElement {
   const image = document.createElement("img");
-  image.src = tileUrl;
-  image.alt = "A spore tile";
+  image.src = mushroomUrl;
+  image.alt = "A cluster of mushrooms on dark forest floor";
   image.width = 96;
   image.height = 96;
   return image;
