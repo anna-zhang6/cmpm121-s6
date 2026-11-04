@@ -39,4 +39,13 @@ export const purchases: readonly Purchase[] = [
     clickBonus: 0,
     rateBonus: 2,
   },
+  {
+    id: "log",
+    name: "Fallen Oak Log",
+    detail: "A humid chunk of oak hosts whole new broods.",
+    baseCost: 400,
+    costGrowth: 1.35,
+    clickBonus: 0,
+    rateBonus: 8,
+  },
 ];
